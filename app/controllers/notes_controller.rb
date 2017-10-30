@@ -30,12 +30,24 @@ class NotesController < ApplicationController
   # POST /notes
   # POST /notes.json
   def create
-    @note = Note.new({content: params[:content]})
-    if @note.save
-      redirect_to notes_url + @note.slug + '/info'
-    else
-      render 'index'
+    respond_to do |format|
+      note = Note.create(content: params[:message])
+      format.xml {
+        render :xml => {url: notes_url + note.slug + '/info'}.to_xml
+      }
+      format.json {
+        render :json => {url: notes_url + note.slug + '/info'} 
+      }
+      format.html {
+        @note = Note.new({content: params[:content]})
+        if @note.save
+          redirect_to notes_url + @note.slug + '/info'
+        else
+          render 'index'
+        end
+      }
     end
+    
   end
 
   def info
