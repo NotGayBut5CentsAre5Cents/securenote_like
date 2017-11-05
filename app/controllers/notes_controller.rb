@@ -30,23 +30,37 @@ class NotesController < ApplicationController
   # POST /notes
   # POST /notes.json
   def create
-    respond_to do |format|
-      note = Note.create(content: params[:message])
-      format.xml {
-        render :xml => {url: notes_url + note.slug + '/info'}.to_xml
-      }
-      format.json {
-        render :json => {url: notes_url + note.slug + '/info'} 
-      }
-      format.html {
-        @note = Note.new({content: params[:content]})
-        if @note.save
-          redirect_to notes_url + @note.slug + '/info'
-        else
-          render 'index'
-        end
-      }
+    if request.content_type =~ /xml/
+      params[:message] = Hash.from_xml(request.body.read)["message"]
+      note = Note.create(note_api_params)
+      render xml:
+      '<?xml version = "1.0" encoding = "UTF-8" standalone = "yes"?>' +
+      '<url>' +
+        notes_url + note.slug + "/info" +
+      '</url>'
+    elsif request.content_type =~ /json/
+      note = Note.create(note_api_params)
+      render json: {url: notes_url + note.slug + '/info'}
+    elsif request.content_type =~ /form/
+      @note = Note.new({content: params[:content]})
+      if @note.save
+        redirect_to notes_url + @note.slug + '/info'
+      else
+        render 'index'
+      end
     end
+    #respond_to do |format|
+    #  format.json { render :json => {url: notes_url + note.slug + '/info'} }
+    #  format.xml { render xml: {url: notes_url + note.slug + '/info'}.to_xml }
+    #  format.html {
+    #    @note = Note.new({content: params[:content]})
+    #    if @note.save
+    #      redirect_to notes_url + @note.slug + '/info'
+    #    else
+    #      render 'index'
+    #    end
+    #  }
+    #end
     
   end
 
@@ -87,5 +101,8 @@ class NotesController < ApplicationController
     # Never trust parameters from the scary internet, only allow the white list through.
     def note_params
       params.require(:note).permit(:content)
+    end
+     def note_api_params
+      params.permit(:content)
     end
 end

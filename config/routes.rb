@@ -4,5 +4,5 @@ Rails.application.routes.draw do
   post '/', to: 'notes#create', as:"notes"
   get '/:slug', to: 'notes#show'
   get '/:slug/info', to: 'notes#info'
-  post '/notes/api', to: 'notes#create'
+  post '/messages/api', to: 'notes#create'
 end
