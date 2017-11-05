@@ -32,14 +32,14 @@ class NotesController < ApplicationController
   def create
     if request.content_type =~ /xml/
       params[:message] = Hash.from_xml(request.body.read)["message"]
-      note = Note.create(note_api_params)
+      note = Note.create(content: params[:message])
       render xml:
       '<?xml version = "1.0" encoding = "UTF-8" standalone = "yes"?>' +
       '<url>' +
         notes_url + note.slug + "/info" +
       '</url>'
     elsif request.content_type =~ /json/
-      note = Note.create(note_api_params)
+      note = Note.create(content: params[:message])
       render json: {url: notes_url + note.slug + '/info'}
     elsif request.content_type =~ /form/
       @note = Note.new({content: params[:content]})
